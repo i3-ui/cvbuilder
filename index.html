@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Dynamic Resume & CV Builder</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #090d16;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 99px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Standardized Printable A4 Aspect Canvas Dimensions */
+        .cv-canvas {
+            width: 210mm;
+            min-height: 297mm;
+            height: max-content;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+            box-sizing: border-box;
+            word-wrap: break-word;
+        }
+
+        /* Scale down for preview pane visualization while preserving exact print-ready coordinates */
+        .cv-scale-container {
+            transform: scale(0.72);
+            transform-origin: top center;
+        }
+        @media (min-width: 1400px) {
+            .cv-scale-container { transform: scale(0.82); }
+        }
+        @media (min-width: 1600px) {
+            .cv-scale-container { transform: scale(0.92); }
+        }
+
+        /* Dynamic Template Typography Target Blocks */
+        .tmpl-corporate { font-family: 'Inter', sans-serif; }
+        .tmpl-minimalist { font-family: 'Inter', sans-serif; }
+        .tmpl-elegant { font-family: 'Playfair Display', serif; }
+        .tmpl-elegant .sans-target { font-family: 'Inter', sans-serif; }
+    </style>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body class="text-gray-200 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white antialiased custom-scrollbar">
+
+    <header class="border-b border-gray-800/80 bg-gray-950/70 backdrop-blur-md sticky top-0 z-40 px-8 py-4">
+        <div class="max-w-[1800px] mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-indigo-600 to-violet-500 p-2.5 rounded-xl shadow-lg shadow-indigo-500/10">
+                    <i class="fa-solid fa-file-invoice text-xl text-white"></i>
+                </div>
+                <div>
+                    <span class="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">Stratum<span class="text-indigo-400 font-medium text-sm ml-1">// Core Engine</span></span>
+                    <p class="text-[10px] text-gray-500 font-mono tracking-wider uppercase">Enterprise CV Suite</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-6">
+                <button onclick="populateSampleData()" class="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-indigo-400 hover:text-indigo-300 bg-indigo-500/5 hover:bg-indigo-500/10 border border-indigo-500/20 rounded-xl transition-all flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Fill Sample Data
+                </button>
+                <div class="h-4 w-[1px] bg-gray-800"></div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs text-gray-400 font-medium">Layout Matrix:</span>
+                    <span class="text-xs font-bold uppercase tracking-widest bg-emerald-500/10 text-emerald-400 px-3 py-1 border border-emerald-500/20 rounded-full">v4.1 Core Live</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-[1800px] w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden">
+        
+        <section class="lg:col-span-5 border-r border-gray-900 bg-gray-950/30 p-8 overflow-y-auto max-h-[calc(100vh-73px)] custom-scrollbar space-y-6">
+            
+            <div class="bg-gray-950/80 border border-gray-800/80 rounded-2xl p-6 shadow-xl space-y-4">
+                <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-indigo-400"></i> Global Canvas Controls
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-gray-400">CV Structural Model</label>
+                        <select id="templateSelector" onchange="applyTemplateSwitch(this.value)" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer">
+                            <option value="corporate">Modern Corporate (Dual Tone)</option>
+                            <option value="minimalist">Executive Minimalist (Clean Linear)</option>
+                            <option value="elegant">Creative Elegant (Serif Luxe)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-gray-400">Primary Palette Accent</label>
+                        <div class="flex items-center space-x-3 bg-gray-900 border border-gray-800 rounded-xl px-4 py-2">
+                            <input type="color" id="primaryColorAccent" value="#1e3a8a" oninput="updatePrimaryColor(this.value)" class="w-8 h-8 rounded border border-gray-700 bg-transparent cursor-pointer">
+                            <span id="colorHexLabel" class="text-xs font-mono text-gray-400">#1e3a8a</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                
+                <div class="bg-gray-950/60 border border-gray-900 rounded-2xl overflow-hidden transition-all duration-300">
+                    <button onclick="toggleAccordion('acc-profile')" class="w-full px-6 py-4 flex justify-between items-center bg-gray-950/80 hover:bg-gray-900/40 text-left cursor-pointer transition-colors">
+                        <span class="text-sm font-bold text-white flex items-center gap-3"><i class="fa-solid fa-user-tie text-indigo-400"></i> Personal Identification Data</span>
+                        <i id="icon-acc-profile" class="fa-solid fa-chevron-down text-xs text-gray-500 transition-transform duration-300 transform rotate-180"></i>
+                    </button>
+                    <div id="acc-profile" class="p-6 border-t border-gray-900/60 space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-medium text-gray-400">Full Signature Name <span class="text-red-500 font-bold">*</span></label>
+                                <input type="text" id="in-name" oninput="liveSyncText('in-name', 'cv-name')" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors" placeholder="Alexander Wright">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-medium text-gray-400">Target Executive Title <span class="text-red-500 font-bold">*</span></label>
+                                <input type="text" id="in-title" oninput="liveSyncText('in-title', 'cv-title')" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors" placeholder="Principal Enterprise Architect">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-medium text-gray-400">Email Vector Address <span class="text-red-500 font-bold">*</span></label>
+                                <input type="email" id="in-email" oninput="liveSyncText('in-email', 'cv-email')" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors" placeholder="alexander.wright@enterprise.com">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-medium text-gray-400">Mobile Telephony Node <span class="text-red-500 font-bold">*</span></label>
+                                <input type="tel" id="in-phone" oninput="liveSyncText('in-phone', 'cv-phone')" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors" placeholder="+1 (555) 019-2834">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-medium text-gray-400">Geographical HQ Location</label>
+                                <input type="text" id="in-location" oninput="liveSyncText('in-location', 'cv-location')" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors" placeholder="New York City, NY">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-medium text-gray-400">LinkedIn Profile URI</label>
+                                <input type="text" id="in-linkedin" oninput="liveSyncText('in-linkedin', 'cv-linkedin')" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors" placeholder="linkedin.com/in/alexwright">
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-medium text-gray-400">Executive Summary Profile Narrative</label>
+                            <textarea id="in-summary" oninput="liveSyncText('in-summary', 'cv-summary')" rows="4" class="w-full bg-gray-900 border border-gray-800 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors resize-none" placeholder="Detail your core professional summary vectors, high-impact legacy strategies, and technical mastery domains..."></textarea>
+                        </div>
+                        
+                        <div class="space-y-2 border-t border-gray-900/80 pt-4">
+                            <label class="text-xs font-bold uppercase tracking-wider text-gray-400 block">Profile Identity Graphics <span class="text-red-500 font-bold">*</span></label>
+                            
+                            <div class="grid grid-cols-3 gap-1 bg-gray-900 p-1 rounded-xl border border-gray-800">
+                                <button onclick="switchImageUploadMode('upload')" id="btn-img-upload" class="py-1.5 text-[11px] font-medium rounded-lg text-white bg-gray-800 transition-all cursor-pointer">File Input</button>
+                                <button onclick="switchImageUploadMode('drag')" id="btn-img-drag" class="py-1.5 text-[11px] font-medium rounded-lg text-gray-400 hover:text-white transition-all cursor-pointer">Drag & Drop</button>
+                                <button onclick="switchImageUploadMode('camera')" id="btn-img-camera" class="py-1.5 text-[11px] font-medium rounded-lg text-gray-400 hover:text-white transition-all cursor-pointer">Live Video Capture</button>
+                            </div>
+
+                            <div id="img-mode-upload" class="space-y-2 py-2">
+                                <input type="file" id="imageFileInput" accept="image/*" onchange="processImageFile(this.files[0])" class="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 file:cursor-pointer">
+                            </div>
+
+                            <div id="img-mode-drag" class="hidden border-2 border-dashed border-gray-800 hover:border-indigo-500/50 bg-gray-900/40 rounded-xl p-6 text-center transition-all cursor-pointer relative" id="dropZoneContainer">
+                                <input type="file" accept="image/*" onchange="processImageFile(this.files[0])" class="absolute inset-0 opacity-0 cursor-pointer">
+                                <i class="fa-solid fa-cloud-arrow-up text-xl text-gray-600 mb-1"></i>
+                                <p class="text-xs text-gray-400 font-medium">Drop profile graphical binary elements here</p>
+                            </div>
+
+                            <div id="img-mode-camera" class="hidden space-y-3 py-2 text-center">
+                                <div class="relative w-32 h-32 mx-auto rounded-full overflow-hidden bg-black border border-gray-800">
+                                    <video id="webcamCaptureStream" class="w-full h-full object-cover transform -scale-x-100" autoplay playsinline></video>
+                                </div>
+                                <div class="flex justify-center gap-2">
+                                    <button onclick="bootWebcamDevice()" type="button" class="px-3 py-1.5 text-[11px] font-medium bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded-lg text-gray-300 transition-colors cursor-pointer"><i class="fa-solid fa-power-off text-emerald-400 mr-1"></i> Init Video</button>
+                                    <button onclick="executeSnapshotCapture()" type="button" class="px-3 py-1.5 text-[11px] font-medium bg-indigo-600 hover:bg-indigo-500 rounded-lg text-white transition-colors cursor-pointer"><i class="fa-solid fa-camera mr-1"></i> Snapshot</button>
+                                </div>
+                            </div>
+                            
+                            <input type="hidden" id="cachedImageBase64">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-950/60 border border-gray-900 rounded-2xl overflow-hidden transition-all duration-300">
+                    <button onclick="toggleAccordion('acc-work')" class="w-full px-6 py-4 flex justify-between items-center bg-gray-950/80 hover:bg-gray-900/40 text-left cursor-pointer transition-colors">
+                        <span class="text-sm font-bold text-white flex items-center gap-3"><i class="fa-solid fa-briefcase text-indigo-400"></i> Corporate Experience Log</span>
+                        <i id="icon-acc-work" class="fa-solid fa-chevron-down text-xs text-gray-500 transition-transform duration-300"></i>
+                    </button>
+                    <div id="acc-work" class="hidden p-6 border-t border-gray-900/60 space-y-6">
+                        <div id="workEntriesContainer" class="space-y-6">
+                            </div>
+                        <button onclick="injectWorkFieldBlock()" class="w-full py-2.5 text-xs font-semibold uppercase tracking-wider bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-indigo-500/50 rounded-xl text-indigo-400 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-circle-plus"></i> Append Corporate Profile Block
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-gray-950/60 border border-gray-900 rounded-2xl overflow-hidden transition-all duration-300">
+                    <button onclick="toggleAccordion('acc-education')" class="w-full px-6 py-4 flex justify-between items-center bg-gray-950/80 hover:bg-gray-900/40 text-left cursor-pointer transition-colors">
+                        <span class="text-sm font-bold text-white flex items-center gap-3"><i class="fa-solid fa-graduation-cap text-indigo-400"></i> Academic Background Ledger</span>
+                        <i id="icon-acc-education" class="fa-solid fa-chevron-down text-xs text-gray-500 transition-transform duration-300"></i>
+                    </button>
+                    <div id="acc-education" class="hidden p-6 border-t border-gray-900/60 space-y-6">
+                        <div id="educationEntriesContainer" class="space-y-6">
+                            </div>
+                        <button onclick="injectEducationFieldBlock()" class="w-full py-2.5 text-xs font-semibold uppercase tracking-wider bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-indigo-500/50 rounded-xl text-indigo-400 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-circle-plus"></i> Append Academic Record Node
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-gray-950/60 border border-gray-900 rounded-2xl overflow-hidden transition-all duration-300">
+                    <button onclick="toggleAccordion('acc-skills')" class="w-full px-6 py-4 flex justify-between items-center bg-gray-950/80 hover:bg-gray-900/40 text-left cursor-pointer transition-colors">
+                        <span class="text-sm font-bold text-white flex items-center gap-3"><i class="fa-solid fa-screwdriver-wrench text-indigo-400"></i> Capabilities & Core Expertise</span>
+                        <i id="icon-acc-skills" class="fa-solid fa-chevron-down text-xs text-gray-500 transition-transform duration-300"></i>
+                    </button>
+                    <div id="acc-skills" class="hidden p-6 border-t border-gray-900/60 space-y-4">
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-medium text-gray-400">Skills Allocation (Comma Separated)</label>
+                            <input type="text" id="in-skills" oninput="compileDynamicSkillsArray(this.value)" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors font-mono text-xs" placeholder="TypeScript, Kubernetes, GraphQL, System Design">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-950/60 border border-gray-900 rounded-2xl overflow-hidden transition-all duration-300">
+                    <button onclick="toggleAccordion('acc-projects')" class="w-full px-6 py-4 flex justify-between items-center bg-gray-950/80 hover:bg-gray-900/40 text-left cursor-pointer transition-colors">
+                        <span class="text-sm font-bold text-white flex items-center gap-3"><i class="fa-solid fa-diagram-project text-indigo-400"></i> Strategic Project Registry</span>
+                        <i id="icon-acc-projects" class="fa-solid fa-chevron-down text-xs text-gray-500 transition-transform duration-300"></i>
+                    </button>
+                    <div id="acc-projects" class="hidden p-6 border-t border-gray-900/60 space-y-6">
+                        <div id="projectEntriesContainer" class="space-y-6">
+                            </div>
+                        <button onclick="injectProjectFieldBlock()" class="w-full py-2.5 text-xs font-semibold uppercase tracking-wider bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-indigo-500/50 rounded-xl text-indigo-400 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-circle-plus"></i> Append Enterprise Portfolio Block
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="lg:col-span-7 bg-[#111622] p-8 overflow-y-auto max-h-[calc(100vh-73px)] custom-scrollbar flex flex-col items-center relative">
+            
+            <div class="sticky top-0 z-30 w-full max-w-4xl bg-gray-950/80 border border-gray-800/80 rounded-2xl p-4 shadow-2xl backdrop-blur-md mb-8 flex flex-col sm:flex-row gap-4 justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-xs font-mono text-gray-400">Viewport Render Mirror Sync Active</span>
+                </div>
+                
+                <div class="relative inline-block text-left" id="downloadDropdownContainer">
+                    <button onclick="toggleExportMenu()" class="px-5 py-2.5 text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 rounded-xl text-white transition-all shadow-xl shadow-indigo-600/10 flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-cloud-arrow-down"></i> Dispatch Document Export <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                    </button>
+                    <div id="exportDropdownMenu" class="hidden absolute right-0 mt-2 w-56 rounded-xl shadow-2xl bg-gray-950 border border-gray-800 overflow-hidden z-50">
+                        <div class="py-1">
+                            <button onclick="triggerRenderExport('pdf')" class="w-full px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-300 hover:bg-gray-900 hover:text-white flex items-center gap-3 cursor-pointer">
+                                <i class="fa-solid fa-file-pdf text-red-400 text-sm"></i> Download Corporate PDF
+                            </button>
+                            <button onclick="triggerRenderExport('png')" class="w-full px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-300 hover:bg-gray-900 hover:text-white flex items-center gap-3 cursor-pointer">
+                                <i class="fa-solid fa-file-image text-blue-400 text-sm"></i> Download High-Res PNG
+                            </button>
+                            <button onclick="triggerRenderExport('jpg')" class="w-full px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-300 hover:bg-gray-900 hover:text-white flex items-center gap-3 cursor-pointer">
+                                <i class="fa-solid fa-file-jpeg text-amber-400 text-sm"></i> Download Compressed JPG
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full flex justify-center h-[1100px] sm:h-[1200px] lg:h-auto overflow-hidden lg:overflow-visible">
+                <div class="cv-scale-container">
+                    
+                    <div id="renderTargetCanvas" class="cv-canvas bg-white text-gray-800 tmpl-corporate">
+                        
+                        <div id="view-tmpl-corporate" class="w-full h-full min-h-[297mm] grid grid-cols-12">
+                            <div class="col-span-4 bg-slate-900 text-gray-300 p-8 flex flex-col space-y-6">
+                                <div class="flex flex-col items-center text-center space-y-4">
+                                    <div class="w-32 h-32 rounded-full border-4 border-slate-800 overflow-hidden bg-slate-800 flex items-center justify-center">
+                                        <img id="cv-img-corporate" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23334155'/><circle cx='50' cy='40' r='20' fill='%2364748b'/><path d='M20,90 C20,70 80,70 80,90' fill='%2364748b'/></svg>" class="w-full h-full object-cover">
+                                    </div>
+                                    <div>
+                                        <h2 id="cv-name-corporate" class="text-lg font-bold text-white tracking-tight">Alexander Wright</h2>
+                                        <p id="cv-title-corporate" class="text-xs text-indigo-400 font-medium uppercase tracking-wider mt-1">Enterprise Architect</p>
+                                    </div>
+                                </div>
+                                <div class="border-t border-slate-800 my-2"></div>
+                                <div class="space-y-3 text-xs">
+                                    <h4 class="font-bold uppercase tracking-wider text-white text-[11px] text-indigo-400">Contact Vectors</h4>
+                                    <p class="flex items-center gap-2 break-all"><i class="fa-solid fa-envelope text-slate-500 w-4"></i> <span id="cv-email-corporate">alexander@enterprise.com</span></p>
+                                    <p class="flex items-center gap-2"><i class="fa-solid fa-phone text-slate-500 w-4"></i> <span id="cv-phone-corporate">+1 (555) 019-2834</span></p>
+                                    <p class="flex items-center gap-2"><i class="fa-solid fa-location-dot text-slate-500 w-4"></i> <span id="cv-location-corporate">New York, NY</span></p>
+                                    <p class="flex items-center gap-2 break-all"><i class="fa-brands fa-linkedin text-slate-500 w-4"></i> <span id="cv-linkedin-corporate">linkedin.com/in/alex</span></p>
+                                </div>
+                                <div class="space-y-3">
+                                    <h4 class="font-bold uppercase tracking-wider text-white text-[11px] text-indigo-400">Capabilities Array</h4>
+                                    <div id="cv-skills-corporate" class="flex flex-wrap gap-1.5">
+                                        </div>
+                                </div>
+                            </div>
+                            <div class="col-span-8 bg-white p-8 space-y-6">
+                                <div class="space-y-2">
+                                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-1">Executive Statement</h3>
+                                    <p id="cv-summary-corporate" class="text-xs text-slate-600 leading-relaxed italic">Strategic visionary leader mapping systemic technology matrices into production architecture parameters...</p>
+                                </div>
+                                <div class="space-y-4">
+                                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-1">Corporate Milestones</h3>
+                                    <div id="cv-work-corporate" class="space-y-4">
+                                        </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-1">Strategic Portfolio</h3>
+                                    <div id="cv-projects-corporate" class="space-y-3">
+                                        </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-1">Academic Credentials</h3>
+                                    <div id="cv-education-corporate" class="space-y-3">
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="view-tmpl-minimalist" class="hidden w-full h-full min-h-[297mm] bg-white p-12 space-y-8">
+                            <div class="flex justify-between items-start border-b-2 border-slate-900 pb-6">
+                                <div class="space-y-2 max-w-[70%]">
+                                    <h1 id="cv-name-minimalist" class="text-3xl font-bold tracking-tight text-slate-900">Alexander Wright</h1>
+                                    <p id="cv-title-minimalist" class="text-sm font-semibold uppercase tracking-widest text-indigo-700" id="accent-text-min">Principal Enterprise Architect</p>
+                                    <p id="cv-summary-minimalist" class="text-xs text-slate-600 leading-relaxed pt-2">Strategic visionary leader mapping systemic technology matrices into production architecture parameters...</p>
+                                </div>
+                                <div class="flex flex-col items-end space-y-1 text-[11px] text-slate-500 font-mono">
+                                    <div class="w-20 h-20 rounded border border-slate-200 overflow-hidden mb-2 bg-slate-50 flex items-center justify-center">
+                                        <img id="cv-img-minimalist" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23f1f5f9'/><circle cx='50' cy='40' r='20' fill='%23cbd5e1'/><path d='M20,90 C20,70 80,70 80,90' fill='%23cbd5e1'/></svg>" class="w-full h-full object-cover">
+                                    </div>
+                                    <p id="cv-email-minimalist">alexander@enterprise.com</p>
+                                    <p id="cv-phone-minimalist">+1 (555) 019-2834</p>
+                                    <p id="cv-location-minimalist">New York, NY</p>
+                                    <p id="cv-linkedin-minimalist">linkedin.com/in/alex</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-12 gap-8">
+                                <div class="col-span-8 space-y-6">
+                                    <div class="space-y-4">
+                                        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-900 border-b border-slate-200 pb-1">Professional Experience</h3>
+                                        <div id="cv-work-minimalist" class="space-y-4"></div>
+                                    </div>
+                                    <div class="space-y-4">
+                                        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-900 border-b border-slate-200 pb-1">Technical Engagements</h3>
+                                        <div id="cv-projects-minimalist" class="space-y-3"></div>
+                                    </div>
+                                </div>
+                                <div class="col-span-4 space-y-6">
+                                    <div class="space-y-3">
+                                        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-900 border-b border-slate-200 pb-1">Expertise Core</h3>
+                                        <div id="cv-skills-minimalist" class="flex flex-wrap gap-1"></div>
+                                    </div>
+                                    <div class="space-y-4">
+                                        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-900 border-b border-slate-200 pb-1">Education</h3>
+                                        <div id="cv-education-minimalist" class="space-y-3"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="view-tmpl-elegant" class="hidden w-full h-full min-h-[297mm] bg-[#fdfbf7] p-12 space-y-8">
+                            <div class="text-center space-y-4 border-b border-stone-200 pb-6 relative">
+                                <div class="absolute left-0 top-0 w-20 h-20 rounded-full overflow-hidden bg-stone-100 border border-stone-200 flex items-center justify-center">
+                                    <img id="cv-img-elegant" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23f5f5f4'/><circle cx='50' cy='40' r='20' fill='%23d6d3d1'/><path d='M20,90 C20,70 80,70 80,90' fill='%23d6d3d1'/></svg>" class="w-full h-full object-cover">
+                                </div>
+                                <h1 id="cv-name-elegant" class="text-4xl tracking-tight text-stone-900">Alexander Wright</h1>
+                                <p id="cv-title-elegant" class="text-xs sans-target uppercase tracking-widest text-amber-800 font-medium" id="accent-text-eleg">Principal Enterprise Architect</p>
+                                <div class="flex justify-center gap-4 text-[11px] sans-target text-stone-500 italic">
+                                    <span id="cv-email-elegant">alexander@enterprise.com</span>&bull;
+                                    <span id="cv-phone-elegant">+1 (555) 019-2834</span>&bull;
+                                    <span id="cv-location-elegant">New York, NY</span>
+                                </div>
+                                <p id="cv-linkedin-elegant" class="text-[10px] sans-target text-stone-400 font-mono">linkedin.com/in/alex</p>
+                            </div>
+                            <div class="space-y-2 text-center max-w-2xl mx-auto">
+                                <p id="cv-summary-elegant" class="text-xs text-stone-600 leading-relaxed italic">Strategic visionary leader mapping systemic technology matrices into production architecture parameters...</p>
+                            </div>
+                            <div class="space-y-6">
+                                <div class="space-y-3">
+                                    <h3 class="text-xs sans-target font-bold uppercase tracking-widest text-stone-400 text-center">Chronological Tenure Records</h3>
+                                    <div class="w-12 h-[1px] bg-stone-300 mx-auto"></div>
+                                    <div id="cv-work-elegant" class="space-y-4 pt-2"></div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-8 pt-4">
+                                    <div class="space-y-3">
+                                        <h3 class="text-xs sans-target font-bold uppercase tracking-widest text-stone-400">Key Portfolio Engagements</h3>
+                                        <div class="w-8 h-[1px] bg-stone-300"></div>
+                                        <div id="cv-projects-elegant" class="space-y-3 pt-2"></div>
+                                    </div>
+                                    <div class="space-y-4">
+                                        <div class="space-y-3">
+                                            <h3 class="text-xs sans-target font-bold uppercase tracking-widest text-stone-400">Intellectual Capabilities</h3>
+                                            <div class="w-8 h-[1px] bg-stone-300"></div>
+                                            <div id="cv-skills-elegant" class="flex flex-wrap gap-1.5 pt-2"></div>
+                                        </div>
+                                        <div class="space-y-3">
+                                            <h3 class="text-xs sans-target font-bold uppercase tracking-widest text-stone-400">Academic Background</h3>
+                                            <div class="w-8 h-[1px] bg-stone-300"></div>
+                                            <div id="cv-education-elegant" class="space-y-3 pt-2"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-gray-900 bg-gray-950 px-8 py-6 text-center text-xs text-gray-600">
+        <div class="max-w-[1800px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p>&copy; 2026 Stratum Systems Infrastructure Labs. Dynamic Client-Side Engine Runtime Architecture. All Rights Reserved.</p>
+            <div class="flex items-center space-x-6 font-medium">
+                <button onclick="displayPolicyModal('terms')" class="hover:text-indigo-400 transition-colors cursor-pointer">Terms of Policy</button>
+                <div class="w-1 h-1 rounded-full bg-gray-800"></div>
+                <button onclick="displayPolicyModal('privacy')" class="hover:text-indigo-400 transition-colors cursor-pointer">Privacy Policy</button>
+            </div>
+        </div>
+    </footer>
+
+    <div id="legalPolicyModalOverlay" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-gray-950 border border-gray-800 rounded-3xl w-full max-w-3xl p-8 max-h-[85vh] overflow-y-auto custom-scrollbar space-y-6 relative">
+            <button onclick="dismissPolicyModal()" class="absolute top-6 right-6 p-2 rounded-xl bg-gray-900 border border-gray-800 hover:border-red-500/50 text-gray-400 hover:text-white transition-all cursor-pointer">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+            <h2 id="modalPolicyTitle" class="text-xl font-bold text-white tracking-tight">System Legal Sub-Node Payload</h2>
+            <div id="modalPolicyBody" class="text-xs text-gray-400 leading-relaxed space-y-4 font-mono">
+                </div>
+            <div class="pt-4 border-t border-gray-900 flex justify-end">
+                <button onclick="dismissPolicyModal()" class="px-5 py-2 text-xs font-semibold uppercase tracking-wider bg-gray-900 border border-gray-800 hover:border-indigo-500 rounded-xl text-gray-300 transition-all cursor-pointer">Acknowledge Framework Directive</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="validationSystemToast" class="fixed bottom-8 right-8 z-50 transform translate-y-24 opacity-0 transition-all duration-300 flex items-center space-x-3 bg-red-950/90 border border-red-500/40 text-red-200 px-6 py-4 rounded-2xl shadow-2xl max-w-md">
+        <i class="fa-solid fa-triangle-exclamation text-lg text-red-400"></i>
+        <div>
+            <h5 class="text-xs font-bold uppercase tracking-wider text-white">System Validation Failure</h5>
+            <p class="text-[11px] text-red-300 mt-0.5">Please fill out all mandatory fields marked with *</p>
+        </div>
+    </div>
+
+    <script>
+        // System Caching Registries
+        let activeImageStream = null;
+        let globalSelectedTemplate = 'corporate';
+        let currentAccentColor = '#1e3a8a';
+
+        // Unique dynamic element key index maps
+        let workIndex = 0;
+        let educationIndex = 0;
+        let projectIndex = 0;
+
+        // Structured configuration vectors for legal data arrays
+        const legalDatabase = {
+            terms: `
+                <p class="font-bold text-gray-200 text-sm">1. ENTERPRISE SUBSYSTEM RUNTIME AGREEMENT</p>
+                <p>By engaging the Stratum Client-Side SPA Architecture Frame Engine, you hereby establish a binding technical alignment structure with Stratum Infrastructure Labs. The system processes text streams, cryptographic layout models, and media transformations strictly inside local memory buffers.</p>
+                <p class="font-bold text-gray-200 text-sm mt-4">2. INTELLECTUAL STRUCTURAL BLUEPRINT TITLES</p>
+                <p>The code blocks, design layouts, CSS variables, and real-time synchronization listeners are property coordinates of Stratum Systems. Users maintain full unencumbered property equity over content payloads, string values, and exported document matrices output by the engine.</p>
+                <p class="font-bold text-gray-200 text-sm mt-4">3. FRAMEWORK WARRANTY DISCLAIMERS</p>
+                <p>This dynamic single-page system is executed "as-is" without systemic operational performance validation structures or corporate service level availability agreements. Stratum Labs declares complete immunity from data stream anomalies during browser rendering or PDF compilation pipeline events.</p>
+            `,
+            privacy: `
+                <p class="font-bold text-gray-200 text-sm">1. ZERO-CLOUD LOCAL METADATA MANIFESTO</p>
+                <p>Stratum operates with a strict sandboxed architectural runtime. No data packets, profile images, personal metrics, or enterprise career logs are transported across external HTTP interfaces or cached on remote databases. Everything is finalized inside your web browser sandbox layer.</p>
+                <p class="font-bold text-gray-200 text-sm mt-4">2. HARDWARE ACCESS AND HARDWARE PERMISSIONS PROTOCOL</p>
+                <p>When executing live identity photo captures via device webcam arrays, hardware interfaces are bridged solely inside the browser canvas element. Image stream arrays are dropped instantly upon closure of the capture thread loop, maintaining total data isolation boundaries.</p>
+                <p class="font-bold text-gray-200 text-sm mt-4">3. PERSISTENT STORAGE SEGREGATION</p>
+                <p>The system utilizes temporary volatility variables within local memory frames. No tracking cookies or target marketing tracking nodes are deployed across your endpoint operating system platforms.</p>
+            `
+        };
+
+        // --- SECTION A: ACCORDION ROUTING MANAGER ---
+        function toggleAccordion(targetId) {
+            const el = document.getElementById(targetId);
+            const icon = document.getElementById(`icon-${targetId}`);
+            const isHidden = el.classList.contains('hidden');
+            
+            if (isHidden) {
+                el.classList.remove('hidden');
+                if (icon) icon.classList.add('rotate-180');
+            } else {
+                el.classList.add('hidden');
+                if (icon) icon.classList.remove('rotate-180');
+            }
+        }
+
+        // --- SECTION B: DATA SYNCHRONIZATION ENGINES ---
+        function liveSyncText(inputId, baseOutputId) {
+            const txt = document.getElementById(inputId).value;
+            const suffixes = ['corporate', 'minimalist', 'elegant'];
+            
+            suffixes.forEach(sfx => {
+                const outEl = document.getElementById(`${baseOutputId}-${sfx}`);
+                if (outEl) {
+                    outEl.innerText = txt.trim() !== "" ? txt : getFallbackPlaceholder(baseOutputId);
+                }
+            });
+        }
+
+        function getFallbackPlaceholder(fieldId) {
+            const fallbacks = {
+                'cv-name': 'Alexander Wright',
+                'cv-title': 'Principal Enterprise Architect',
+                'cv-email': 'alexander@enterprise.com',
+                'cv-phone': '+1 (555) 019-2834',
+                'cv-location': 'New York City, NY',
+                'cv-linkedin': 'linkedin.com/in/alexwright',
+                'cv-summary': 'Professional statement field summary target array is empty...'
+            };
+            return fallbacks[fieldId] || '';
+        }
+
+        function compileDynamicSkillsArray(valueString) {
+            const skills = valueString.split(',').map(s => s.trim()).filter(s => s.length > 0);
+            const templates = ['corporate', 'minimalist', 'elegant'];
+            
+            templates.forEach(tmpl => {
+                const targetBox = document.getElementById(`cv-skills-${tmpl}`);
+                if (!targetBox) return;
+                targetBox.innerHTML = '';
+                
+                skills.forEach(skill => {
+                    const block = document.createElement('span');
+                    if (tmpl === 'corporate') {
+                        block.className = "text-[10px] font-medium tracking-wide bg-slate-800 text-slate-300 px-2 py-0.5 rounded";
+                    } else if (tmpl === 'minimalist') {
+                        block.className = "text-[10px] font-mono text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded";
+                    } else {
+                        block.className = "text-[10px] font-serif tracking-wide text-amber-900 border border-amber-800/20 px-2 py-0.5 rounded-full italic";
+                    }
+                    block.innerText = skill;
+                    targetBox.appendChild(block);
+                });
+            });
+        }
+
+        // --- SECTION C: MULTI-MODE IMAGE ACQUISITION LAYER ---
+        function switchImageUploadMode(targetMode) {
+            const modes = ['upload', 'drag', 'camera'];
+            modes.forEach(m => {
+                document.getElementById(`img-mode-${m}`).classList.add('hidden');
+                document.getElementById(`btn-img-${m}`).className = "py-1.5 text-[11px] font-medium rounded-lg text-gray-400 hover:text-white transition-all cursor-pointer";
+            });
+
+            document.getElementById(`img-mode-${targetMode}`).classList.remove('hidden');
+            document.getElementById(`btn-img-${targetMode}`).className = "py-1.5 text-[11px] font-medium rounded-lg text-white bg-gray-800 transition-all cursor-pointer";
+            
+            if (targetMode !== 'camera') {
+                killWebcamTrack();
+            }
+        }
+
+        function processImageFile(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                bindImageToCanvases(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function bootWebcamDevice() {
+            const video = document.getElementById('webcamCaptureStream');
+            try {
+                if (activeImageStream) killWebcamTrack();
+                activeImageStream = await navigator.mediaDevices.getUserMedia({ video: { width: 300, height: 300 } });
+                video.srcObject = activeImageStream;
+            } catch (err) {
+                alert("Webcam device link failed authorization structures: " + err.message);
+            }
+        }
+
+        function executeSnapshotCapture() {
+            const video = document.getElementById('webcamCaptureStream');
+            if (!activeImageStream || video.paused) return alert("Initialize webcam video grid feed allocation map first.");
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = 300;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
+            
+            // Mirror image processing flip alignment matrices
+            ctx.translate(300, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, 300, 300);
+            
+            const base64Str = canvas.toDataURL('image/jpeg');
+            bindImageToCanvases(base64Str);
+            killWebcamTrack();
+        }
+
+        function bindImageToCanvases(dataUrl) {
+            document.getElementById('cachedImageBase64').value = dataUrl;
+            ['corporate', 'minimalist', 'elegant'].forEach(tmpl => {
+                const el = document.getElementById(`cv-img-${tmpl}`);
+                if (el) el.src = dataUrl;
+            });
+        }
+
+        function killWebcamTrack() {
+            if (activeImageStream) {
+                activeImageStream.getTracks().forEach(track => track.stop());
+                activeImageStream = null;
+            }
+        }
+
+        // --- SECTION D: CARDS MULTI-ENTRY COMPILING ARRAYS ---
+        function injectWorkFieldBlock() {
+            const id = `work-${workIndex++}`;
+            const html = `
+                <div id="${id}" class="p-4 bg-gray-900/40 border border-gray-800 rounded-xl space-y-3 relative group">
+                    <button onclick="removeDynamicBlock('${id}', 'work')" type="button" class="absolute top-3 right-3 opacity-30 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all cursor-pointer"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" placeholder="Company Space" oninput="syncCollection('work')" class="item-company bg-gray-900 border border-gray-800 text-xs text-white rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500">
+                        <input type="text" placeholder="Role Title" oninput="syncCollection('work')" class="item-role bg-gray-900 border border-gray-800 text-xs text-white rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" placeholder="Timeline (e.g., 2022 - Present)" oninput="syncCollection('work')" class="item-dates bg-gray-900 border border-gray-800 text-xs text-white rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500">
+                        <input type="text" placeholder="Target HQ Location" oninput="syncCollection('work')" class="item-location bg-gray-900 border border-gray-800 text-xs text-white rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <textarea placeholder="Bullet details or responsibilities metrics summary matrices..." oninput="syncCollection('work')" rows="2" class="item-desc w-full bg-gray-900 border border-gray-800 text-xs text-white rounded-lg p-3 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                </div>
+            `;
+            document.getElementById('workEntriesContainer').insertAdjacentHTML('beforeend', html);
+        }
+
+        function injectEducationFieldBlock() {
+            const id = `edu-${educationIndex++}`;
+            const html = `
+                <div id="${id}" class="p-4 bg-gray-900/40 border border-gray-800 rounded-xl space-y-3 relative group">
+                    <button onclick="removeDynamicBlock('${id}', 'education')" type="button" class="absolute top-3 right-3 opacity-30 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all cursor-pointer"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" placeholder="Institution Matrix" oninput="syncCollection('education')" class="item-inst bg-gray-900 border border-gray-800 text-xs text-white rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500">
+                        <input type="text" placeholder="Degree Track" oninput="syncCollection('education')" class="item-degree bg-gray-900 border border-gray-800 text-xs text-white rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" placeholder="Graduation Timeline" oninput="syncCollection('education')" class="item-dates bg-gray-900 border border-gray-800 text-xs text-white rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500">
+                        <input type="text" placeholder="Score Grade GPA (Optional)" oninput="syncCollection('education')" class="item-gpa bg-gray-900 border border-gray-800 text-xs text-white rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+            `;
+            document.getElementById('educationEntriesContainer').insertAdjacentHTML('beforeend', html);
+        }
+
+        function injectProjectFieldBlock() {
+            const id = `proj-${projectIndex++}`;
+            const html = `
+                <div id="${id}" class="p-4 bg-gray-900/40 border border-gray-800 rounded-xl space-y-3 relative group">
+                    <button onclick="removeDynamicBlock('${id}', 'projects')" type="button" class="absolute top-3 right-3 opacity-30 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all cursor-pointer"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" placeholder="Project Nomenclature" oninput="syncCollection('projects')" class="item-title bg-gray-900 border border-gray-800 text-xs text-white rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500">
+                        <input type="text" placeholder="Core Tech Architecture Stack" oninput="syncCollection('projects')" class="item-tech bg-gray-900 border border-gray-800 text-xs text-white rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <textarea placeholder="Highlight structural framework deployments and data performance records..." oninput="syncCollection('projects')" rows="2" class="item-desc w-full bg-gray-900 border border-gray-800 text-xs text-white rounded-lg p-3 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                </div>
+            `;
+            document.getElementById('projectEntriesContainer').insertAdjacentHTML('beforeend', html);
+        }
+
+        function removeDynamicBlock(id, type) {
+            const block = document.getElementById(id);
+            if (block) {
+                block.remove();
+                syncCollection(type);
+            }
+        }
+
+        function syncCollection(type) {
+            const templates = ['corporate', 'minimalist', 'elegant'];
+            
+            templates.forEach(tmpl => {
+                const displayBox = document.getElementById(`cv-${type}-${tmpl}`);
+                if (!displayBox) return;
+                displayBox.innerHTML = '';
+
+                if (type === 'work') {
+                    const containers = document.querySelectorAll('#workEntriesContainer > div');
+                    containers.forEach(box => {
+                        const company = box.querySelector('.item-company').value;
+                        const role = box.querySelector('.item-role').value;
+                        const dates = box.querySelector('.item-dates').value;
+                        const loc = box.querySelector('.item-location').value;
+                        const desc = box.querySelector('.item-desc').value;
+
+                        if(!company && !role) return;
+
+                        const row = document.createElement('div');
+                        row.className = "space-y-1.5";
+                        row.innerHTML = `
+                            <div class="flex justify-between items-baseline font-medium text-slate-800">
+                                <span class="text-xs font-bold text-slate-900 ${tmpl === 'elegant'?'font-serif':''}">${role || 'Untitled Role'} <span class="text-slate-400 font-normal">at</span> ${company || 'Corporate entity'}</span>
+                                <span class="text-[10px] font-mono text-slate-500">${dates}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-[10px] text-slate-400 italic">
+                                <span>${loc}</span>
+                            </div>
+                            <p class="text-[11px] text-slate-600 leading-relaxed pl-2 border-l border-slate-100">${desc}</p>
+                        `;
+                        displayBox.appendChild(row);
+                    });
+                }
+                else if (type === 'education') {
+                    const containers = document.querySelectorAll('#educationEntriesContainer > div');
+                    containers.forEach(box => {
+                        const inst = box.querySelector('.item-inst').value;
+                        const degree = box.querySelector('.item-degree').value;
+                        const dates = box.querySelector('.item-dates').value;
+                        const gpa = box.querySelector('.item-gpa').value;
+
+                        if(!inst && !degree) return;
+
+                        const row = document.createElement('div');
+                        row.className = "text-xs";
+                        row.innerHTML = `
+                            <div class="flex justify-between font-bold text-slate-900">
+                                <span class="${tmpl === 'elegant'?'font-serif':''}">${degree || 'Credential Target'}</span>
+                                <span class="text-[10px] font-mono font-normal text-slate-500">${dates}</span>
+                            </div>
+                            <div class="flex justify-between text-[11px] text-slate-600">
+                                <span>${inst || 'Academic Node Organization'}</span>
+                                <span class="font-mono text-[10px] text-indigo-600 font-bold">${gpa ? 'GPA: '+gpa : ''}</span>
+                            </div>
+                        `;
+                        displayBox.appendChild(row);
+                    });
+                }
+                else if (type === 'projects') {
+                    const containers = document.querySelectorAll('#projectEntriesContainer > div');
+                    containers.forEach(box => {
+                        const title = box.querySelector('.item-title').value;
+                        const tech = box.querySelector('.item-tech').value;
+                        const desc = box.querySelector('.item-desc').value;
+
+                        if(!title) return;
+
+                        const row = document.createElement('div');
+                        row.className = "space-y-1";
+                        row.innerHTML = `
+                            <div class="flex justify-between items-baseline">
+                                <span class="text-xs font-bold text-slate-900 ${tmpl === 'elegant'?'font-serif':''}">${title}</span>
+                                <span class="text-[9px] font-mono bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">${tech}</span>
+                            </div>
+                            <p class="text-[11px] text-slate-600 leading-relaxed">${desc}</p>
+                        `;
+                        displayBox.appendChild(row);
+                    });
+                }
+            });
+        }
+
+        // --- SECTION E: TEMPLATE STYLES AND ACCENTS CUSTOMIZER ---
+        function applyTemplateSwitch(val) {
+            globalSelectedTemplate = val;
+            const canvas = document.getElementById('renderTargetCanvas');
+            
+            canvas.className = `cv-canvas bg-white text-gray-800 tmpl-${val}`;
+            
+            document.getElementById('view-tmpl-corporate').classList.add('hidden');
+            document.getElementById('view-tmpl-minimalist').classList.add('hidden');
+            document.getElementById('view-tmpl-elegant').classList.add('hidden');
+            
+            document.getElementById(`view-tmpl-${val}`).classList.remove('hidden');
+            updatePrimaryColor(currentAccentColor);
+        }
+
+        function updatePrimaryColor(hex) {
+            currentAccentColor = hex;
+            document.getElementById('colorHexLabel').innerText = hex.toUpperCase();
+            
+            // Dynamic theme variables allocation loop
+            const corpName = document.getElementById('cv-title-corporate');
+            if (corpName) corpName.style.color = hex;
+            
+            const minAccent = document.getElementById('accent-text-min');
+            if (minAccent) minAccent.style.color = hex;
+            
+            const elegAccent = document.getElementById('accent-text-eleg');
+            if (elegAccent) elegAccent.style.color = hex;
+
+            // Handle headings accents color loops dynamically per design matrices variables
+            document.querySelectorAll(`.tmpl-corporate .text-indigo-400`).forEach(el => el.style.color = hex);
+        }
+
+        // --- SECTION F: CORE LEGAL MODALS AND INTERFACES ---
+        function displayPolicyModal(mode) {
+            document.getElementById('modalPolicyTitle').innerText = mode === 'terms' ? 'Stratum Framework Terms of Policy Directive' : 'Stratum Security & Privacy Policy Log';
+            document.getElementById('modalPolicyBody').innerHTML = legalDatabase[mode];
+            document.getElementById('legalPolicyModalOverlay').classList.remove('hidden');
+        }
+        function dismissPolicyModal() {
+            document.getElementById('legalPolicyModalOverlay').classList.add('hidden');
+        }
+
+        // --- SECTION G: ENGINE FEED OVERLAYS DATA INJECTION (SAMPLE DATA) ---
+        function populateSampleData() {
+            document.getElementById('in-name').value = "Julian Vance";
+            document.getElementById('in-title').value = "VP of Systems Engineering & Infrastructure";
+            document.getElementById('in-email').value = "j.vance@enterprise-labs.io";
+            document.getElementById('in-phone').value = "+1 (555) 701-9921";
+            document.getElementById('in-location').value = "San Francisco, CA";
+            document.getElementById('in-linkedin').value = "linkedin.com/vance-infra";
+            document.getElementById('in-summary').value = "Enterprise systems orchestration executive heading mission-critical cloud matrices and multi-region hybrid availability networks. Spearheaded technical modernization plans reducing container layer processing delays by 35%.";
+            document.getElementById('in-skills').value = "GoLang, Distributed Architecture, AWS, Terraform, ISO-27001 Security, Chaos Engineering";
+
+            // Refresh personal vectors bindings explicitly
+            ['in-name', 'in-title', 'in-email', 'in-phone', 'in-location', 'in-linkedin', 'in-summary'].forEach(id => {
+                const base = id.replace('in-', 'cv-');
+                liveSyncText(id, base);
+            });
+            compileDynamicSkillsArray(document.getElementById('in-skills').value);
+
+            // Populate sample dynamic arrays records logs structures safely
+            document.getElementById('workEntriesContainer').innerHTML = '';
+            document.getElementById('educationEntriesContainer').innerHTML = '';
+            document.getElementById('projectEntriesContainer').innerHTML = '';
+
+            injectWorkFieldBlock();
+            const wBox = document.getElementById('workEntriesContainer').lastElementChild;
+            wBox.querySelector('.item-company').value = "Apex Global Cloud Systems";
+            wBox.querySelector('.item-role').value = "Director of Infrastructure Operations";
+            wBox.querySelector('.item-dates').value = "2021 - Present";
+            wBox.querySelector('.item-location').value = "San Francisco HQ";
+            wBox.querySelector('.item-desc').value = "Managed an elite engineering unit tasked with automating deployments across 4,000 multi-tenant server groups. Successfully maintained a 99.999% operational uptime record.";
+            
+            injectEducationFieldBlock();
+            const eBox = document.getElementById('educationEntriesContainer').lastElementChild;
+            eBox.querySelector('.item-inst').value = "Stanford Engineering University";
+            eBox.querySelector('.item-degree').value = "M.S. in Computer Science & Cloud Infrastructure Systems";
+            eBox.querySelector('.item-dates').value = "2014 - 2016";
+            eBox.querySelector('.item-gpa').value = "3.94 / 4.00";
+
+            injectProjectFieldBlock();
+            const pBox = document.getElementById('projectEntriesContainer').lastElementChild;
+            pBox.querySelector('.item-title').value = "Project IronClad Vault Engine";
+            pBox.querySelector('.item-tech').value = "Rust / WebAssembly / Core OS";
+            pBox.querySelector('.item-desc').value = "Architected a zero-trust credential vault running within edge routing frameworks, achieving ultra-low verification latency under extreme traffic loads.";
+
+            syncCollection('work');
+            syncCollection('education');
+            syncCollection('projects');
+        }
+
+        // --- SECTION H: EXPORT ENGINE TERMINAL OPERATIONS ---
+        function toggleExportMenu() {
+            document.getElementById('exportDropdownMenu').classList.toggle('hidden');
+        }
+
+        // Handle dropdown dismissal clicking out of target parameters
+        window.addEventListener('click', function(e) {
+            const wrap = document.getElementById('downloadDropdownContainer');
+            if (wrap && !wrap.contains(e.target)) {
+                document.getElementById('exportDropdownMenu').classList.add('hidden');
+            }
+        });
+
+        function performStrictValidationCheck() {
+            const requiredFields = ['in-name', 'in-email', 'in-phone', 'in-title'];
+            let passes = true;
+
+            requiredFields.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el || el.value.trim() === "") {
+                    passes = false;
+                    el.classList.add('border-red-500', 'bg-red-950/20');
+                    el.addEventListener('input', function clean() {
+                        if (this.value.trim() !== "") {
+                            this.classList.remove('border-red-500', 'bg-red-950/20');
+                            this.removeEventListener('input', clean);
+                        }
+                    });
+                }
+            });
+
+            // Validate avatar profile imagery entry link caching
+            const avatarBase = document.getElementById('cachedImageBase64').value;
+            if (!avatarBase || avatarBase.trim() === "") {
+                passes = false;
+            }
+
+            return passes;
+        }
+
+        function triggerRenderExport(mode) {
+            document.getElementById('exportDropdownMenu').classList.add('hidden');
+            
+            const validationSuccess = performStrictValidationCheck();
+            if (!validationSuccess) {
+                const toast = document.getElementById('validationSystemToast');
+                toast.classList.remove('opacity-0', 'translate-y-24');
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'translate-y-24');
+                }, 4000);
+                return;
+            }
+
+            const canvasElement = document.getElementById('renderTargetCanvas');
+            const targetFilename = `Stratum_Enterprise_CV_${Date.now()}`;
+
+            if (mode === 'pdf') {
+                const outputOptions = {
+                    margin: 0,
+                    filename: `${targetFilename}.pdf`,
+                    image: { type: 'jpeg', quality: 1.0 },
+                    html2canvas: { scale: 2, useCORS: true, logging: false },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+                html2pdf().from(canvasElement).set(outputOptions).save();
+            } 
+            else if (mode === 'png' || mode === 'jpg') {
+                html2canvas(canvasElement, { scale: 2.5, useCORS: true, logging: false }).then(canvas => {
+                    const mimeType = mode === 'png' ? 'image/png' : 'image/jpeg';
+                    const fileExtension = mode === 'png' ? 'png' : 'jpg';
+                    const dataUrl = canvas.toDataURL(mimeType, 1.0);
+                    
+                    const anchor = document.createElement('a');
+                    anchor.download = `${targetFilename}.${fileExtension}`;
+                    anchor.href = dataUrl;
+                    anchor.click();
+                });
+            }
+        }
+
+        // Initialize default empty state views manually inside canvas structures
+        window.addEventListener('DOMContentLoaded', () => {
+            applyTemplateSwitch('corporate');
+        });
+    </script>
+</body>
+</html>
